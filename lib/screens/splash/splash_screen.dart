@@ -7,6 +7,7 @@ import 'package:sunu_task/screens/onboarding/onboarding_screen.dart';
 import 'package:sunu_task/services/storage_service.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../auth/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -56,35 +57,32 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _navigateToNextScreen() {
-    if(!mounted) return;
-    final bool onboardingComplete = StorageService.instance.isOnboardingComplete;
+    if (!mounted) return;
 
-    /*Navigator.pushReplacement(context,
-      MaterialPageRoute<void>(
-      builder: (context) => onboardingComplete
-          ? const HomeScreen()
-          : const OnboardingScreen(),
-    ),
-    );*/
+    final bool onboardingComplete =
+        StorageService.instance.isOnboardingComplete;
+    final currentUser = StorageService.instance.getCurrentUser();
 
-    // Navigation avec animation
+    Widget nextScreen;
+    if (!onboardingComplete) {
+      nextScreen = const OnboardingScreen();
+    } else if (currentUser != null) {
+      nextScreen = const HomeScreen();
+    } else {
+      nextScreen = const LoginScreen();
+    }
+
     Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-          onboardingComplete
-              ? const HomeScreen()
-              : const OnboardingScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(
-                opacity: animation,
-              child: child,
-            );
-          },
-          transitionDuration: Duration(milliseconds: 300)
-        )
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => nextScreen,
+        transitionsBuilder: (_, animation, __, child) =>
+            FadeTransition(opacity: animation, child: child),
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
