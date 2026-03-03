@@ -26,8 +26,8 @@ class User {
     return User(
       id: id ?? this.id,
       name: name ?? this.name,
-      email: email ?? this.email,         // ✅ corrigé
-      password: password ?? this.password, // ✅ corrigé
+      email: email ?? this.email,
+      password: password ?? this.password,
       avatar: avatar ?? this.avatar,
       createdAt: createdAt ?? this.createdAt,
     );
@@ -40,7 +40,7 @@ class User {
       'email': email,
       'password': password,
       'avatar': avatar,
-      'createdAt': createdAt.toIso8601String(), // ✅ corrigé
+      'createdAt': createdAt.toIso8601String(),
     };
   }
 
