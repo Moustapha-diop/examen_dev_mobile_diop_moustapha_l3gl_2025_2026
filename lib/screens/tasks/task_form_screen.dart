@@ -53,6 +53,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     _descriptionController.dispose();
     super.dispose();
   }
+  
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -298,12 +299,14 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                         ),
                       ),
                       const Spacer(),
-                      if (_dueDate != null)
-                        GestureDetector(
+                      Visibility(
+                        visible: _dueDate != null,
+                        child: GestureDetector(
                           onTap: () => setState(() => _dueDate = null),
                           child: const Icon(Icons.close,
                               size: 16, color: AppColors.textSecondary),
                         ),
+                      ),
                     ],
                   ),
                 ),

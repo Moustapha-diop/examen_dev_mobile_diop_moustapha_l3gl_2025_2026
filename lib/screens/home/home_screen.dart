@@ -53,6 +53,13 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
   }
+  @override
+  void dispose() {
+    _authProvider.dispose();
+    _projectProvider.dispose();
+    _taskProvider.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

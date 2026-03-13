@@ -81,7 +81,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
             slivers: [
               // En-tête coloré
               SliverAppBar(
-                expandedHeight: 160,
+                expandedHeight: 120,        // 👈 réduit de 160 à 120
                 pinned: true,
                 backgroundColor: projectColor,
                 foregroundColor: Colors.white,
@@ -92,20 +92,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         color: Colors.white, fontWeight: FontWeight.w700),
                   ),
                   background: Container(
-                    color: projectColor,
-                    padding: const EdgeInsets.fromLTRB(16, 80, 16, 16),
-                    alignment: Alignment.bottomLeft,
-                    child: _project.description != null
-                        ? Text(
-                      _project.description!,
-                      style: TextStyle(
-                        color: Colors.white.withAlpha(200),
-                        fontSize: 13,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                        : null,
+                    color: projectColor,    // 👈 supprime tout le padding et la description
                   ),
                 ),
                 actions: [
@@ -124,12 +111,11 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         ),
                       );
                       if (result == true) {
-                        final updated =
-                            (await widget.projectProvider.projects
-                                .where((p) => p.id == _project.id)
-                                .toList())
-                                .firstOrNull;
-                        if (updated != null) {
+                        final projects = await StorageService.instance.getProjects();
+                        final updated = projects
+                            .where((p) => p.id == _project.id)
+                            .firstOrNull;
+                        if (updated != null && mounted) {
                           setState(() => _project = updated);
                         }
                       }
@@ -148,6 +134,26 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+
+                    Visibility(
+          visible: _project.description != null &&
+          _project.description!.isNotEmpty,
+          child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                    Text(
+                          _project.description ?? '',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                            height: 1.5,
+                          ),
+                    ),
+                    const SizedBox(height: 16),
+                ],
+          ),
+          ),
+
                       // Chips statuts
                       Wrap(
                         spacing: 8,
@@ -218,6 +224,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                         final task = _localTaskProvider.tasks[i];
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 8),
+
                           child: TaskCard(
                             task: task,
                             onTap: () async {
@@ -230,6 +237,8 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
                                   ),
                                 ),
                               );
+
+                              await _loadTasks();
                             },
                           ),
                         );
@@ -255,12 +264,28 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen> {
               ),
             ),
           );
-          if (result == true) await _loadTasks();
+
+          if (result == true) {
+            final projects = await StorageService.instance.getProjects();
+            final updated = projects
+                .where((p) => p.id == _project.id)
+                .firstOrNull;
+            if (updated != null && mounted) {
+              setState(() => _project = updated);
+            }
+            await _loadTasks();
+          }
         },
         backgroundColor: projectColor,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _localTaskProvider.dispose();
+    super.dispose();
   }
 
   Color _statusColor(TaskStatus s) {

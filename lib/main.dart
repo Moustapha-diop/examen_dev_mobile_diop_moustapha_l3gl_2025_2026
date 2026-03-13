@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:sunu_task/core/theme/app_theme.dart';
 import 'package:sunu_task/screens/splash/splash_screen.dart';
 import 'package:sunu_task/services/storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await initializeDateFormatting('fr', null);
   await StorageService.instance.init();
 
   runApp(const SunuTask());

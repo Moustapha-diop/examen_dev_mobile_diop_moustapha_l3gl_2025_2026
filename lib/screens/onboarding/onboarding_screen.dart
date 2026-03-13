@@ -88,23 +88,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildSkipButton() {
-    if(_currentPage != _pages.length -1) {
-      return Align(
+    return Visibility(
+      visible: _currentPage != _pages.length - 1,
+      child: Align(
         alignment: Alignment.centerRight,
         child: TextButton(
-            onPressed: _completeOnboarding,
-            child: Text(
-                AppStrings.skip,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: AppColors.textSecondary,
-                )
-            )
+          onPressed: _completeOnboarding,
+          child: const Text(AppStrings.skip),
         ),
-      );
-    }
-
-    return SizedBox();
+      ),
+    );
   }
 
   Widget _buildPages() {
