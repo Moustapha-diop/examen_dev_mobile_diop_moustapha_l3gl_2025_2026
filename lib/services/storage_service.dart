@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sunu_task/models/project.dart';
 import 'package:sunu_task/models/task.dart';
 import 'package:sunu_task/models/User.dart';
+import 'package:sunu_task/models/comment.dart';
 
 class StorageService {
   // ===== Singleton ==========
@@ -31,6 +32,7 @@ class StorageService {
   static const String _keyUsers = 'users';
   static const String _keyProjects = 'projects';
   static const String _keyTasks = 'tasks';
+  static const String _keyComments = 'comments';
 
   // ======== Onboarding =========
 
@@ -176,14 +178,87 @@ class StorageService {
       _keyTasks,
       jsonEncode(tasks.map((t) => t.toMap()).toList()),
     );
+    await deleteCommentsByTaskId(taskId);
   }
 
   Future<void> deleteTasksByProjectId(String projectId) async {
     final tasks = await getTasks();
+    for (final task in tasks) {
+      if (task.projectId == projectId) {
+        await deleteCommentsByTaskId(task.id);
+      }
+    }
     tasks.removeWhere((t) => t.projectId == projectId);
     await _prefs.setString(
       _keyTasks,
       jsonEncode(tasks.map((t) => t.toMap()).toList()),
     );
+  }
+
+  // ======== Commentaires =========
+
+  Future<List<Comment>> getCommentsByTaskId(String taskId) async {
+    final json = _prefs.getString(_keyComments);
+    if (json == null) return [];
+    try {
+      final list = jsonDecode(json) as List<dynamic>;
+      return list
+          .map((e) => Comment.fromMap(e as Map<String, dynamic>))
+          .where((c) => c.taskId == taskId)
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> saveComment(Comment comment) async {
+    final json = _prefs.getString(_keyComments);
+    final list = json == null
+        ? <Comment>[]
+        : (jsonDecode(json) as List<dynamic>)
+        .map((e) => Comment.fromMap(e as Map<String, dynamic>))
+        .toList();
+
+    final index = list.indexWhere((c) => c.id == comment.id);
+    if (index >= 0) {
+      list[index] = comment;  // update
+    } else {
+      list.add(comment);      // insert
+    }
+
+    await _prefs.setString(
+      _keyComments,
+      jsonEncode(list.map((c) => c.toMap()).toList()),
+    );
+  }
+
+  Future<void> deleteComment(String commentId) async {
+    final json = _prefs.getString(_keyComments);
+    if (json == null) return;
+    try {
+      final list = (jsonDecode(json) as List<dynamic>)
+          .map((e) => Comment.fromMap(e as Map<String, dynamic>))
+          .toList();
+      list.removeWhere((c) => c.id == commentId);
+      await _prefs.setString(
+        _keyComments,
+        jsonEncode(list.map((c) => c.toMap()).toList()),
+      );
+    } catch (_) {}
+  }
+
+  Future<void> deleteCommentsByTaskId(String taskId) async {
+    final json = _prefs.getString(_keyComments);
+    if (json == null) return;
+    try {
+      final list = (jsonDecode(json) as List<dynamic>)
+          .map((e) => Comment.fromMap(e as Map<String, dynamic>))
+          .toList();
+      list.removeWhere((c) => c.taskId == taskId);
+      await _prefs.setString(
+        _keyComments,
+        jsonEncode(list.map((c) => c.toMap()).toList()),
+      );
+    } catch (_) {}
   }
 }
